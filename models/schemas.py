@@ -45,6 +45,13 @@ class ProductCreate(BaseModel):
     unit_of_measurement: measurement
 
 
+class ProductUpdate(BaseModel):
+
+    name: str | None = None
+    price: float | None = None
+    unit_of_measurement: measurement | None = None
+
+
 class Product(BaseModel):
 
     id: int
