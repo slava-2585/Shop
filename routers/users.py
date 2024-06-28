@@ -25,7 +25,7 @@ async def get_roles(roles_name: str, session: AsyncSession = Depends(get_async_s
 
 
 @router.post("/roles/")
-async def add_roles(new_operation: AddRoles, session: AsyncSession = Depends(get_async_session)):
+async def create_roles(new_operation: AddRoles, session: AsyncSession = Depends(get_async_session)):
     stmt = insert(roles).values(**new_operation.dict())
     await session.execute(stmt)
     await session.commit()

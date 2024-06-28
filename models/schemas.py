@@ -1,7 +1,8 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import TIMESTAMP
 
 
 class Roles(BaseModel):
@@ -41,7 +42,7 @@ class measurement(str, Enum):
 class ProductCreate(BaseModel):
 
     name: str
-    price: float
+    price: float = Field(ge=0)
     unit_of_measurement: measurement
 
 
@@ -60,3 +61,26 @@ class Product(BaseModel):
     unit_of_measurement: measurement
 
 
+# order
+
+
+class Order(BaseModel):
+
+    id: int
+    user_id: User
+    dt: datetime
+
+
+class Order(BaseModel):
+
+    id: int
+    id_order: int
+    id_product: int
+    quantity: int
+
+
+class CartCreate(BaseModel):
+
+    #id_order: Order
+    id_product: int
+    quantity: int

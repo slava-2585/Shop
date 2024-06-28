@@ -21,7 +21,7 @@ async def get_product(session: AsyncSession = Depends(get_async_session)):
 
 
 @router.post("/")
-async def add_product(new_product: ProductCreate, session: AsyncSession = Depends(get_async_session)):
+async def create_product(new_product: ProductCreate, session: AsyncSession = Depends(get_async_session)):
     stmt = insert(product).values(**new_product.dict())
     await session.execute(stmt)
     await session.commit()
@@ -42,7 +42,6 @@ async def edit_product(id: int, new_product: ProductUpdate, session: AsyncSessio
 async def delete_product(id: int, session: AsyncSession = Depends(get_async_session)):
     stmt = delete(product).where(product.c.id == id).returning(product.c.id)
     rezult = await session.execute(stmt)
-    print(rezult.rowcount)
     if rezult.rowcount == 1:
         await session.commit()
         return {"status": "success"}
