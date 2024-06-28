@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from sqlalchemy import insert, select, update
+from sqlalchemy import insert, select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.database import get_async_session
@@ -31,8 +31,22 @@ async def add_product(new_product: ProductCreate, session: AsyncSession = Depend
 @router.put("/{id}")
 async def edit_product(id: int, new_product: ProductUpdate, session: AsyncSession = Depends(get_async_session)):
     stmt = update(product).where(product.c.id == id).values(**new_product.dict(exclude_unset=True)).returning(product.c.id)
-    await session.execute(stmt)
-    await session.commit()
-    return {"status": "success"}
-    #raise HTTPException(status_code=404, detail="Product not found")
+    rezult = await session.execute(stmt)
+    if rezult.rowcount == 1:
+        await session.commit()
+        return {"status": "success"}
+    raise HTTPException(status_code=404, detail="Product not found")
+
+
+@router.delete("/{id}")
+async def delete_product(id: int, session: AsyncSession = Depends(get_async_session)):
+    stmt = delete(product).where(product.c.id == id).returning(product.c.id)
+    rezult = await session.execute(stmt)
+    print(rezult.rowcount)
+    if rezult.rowcount == 1:
+        await session.commit()
+        return {"status": "success"}
+    raise HTTPException(status_code=404, detail="Product not found")
+
+
 
