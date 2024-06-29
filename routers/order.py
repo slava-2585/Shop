@@ -13,6 +13,14 @@ router = APIRouter(
     tags=["Заказы"],
 )
 
+def get_msg(from_addr, to_addr, subject, text_msg):
+    msg = MIMEMultipart()
+    msg['Subject'] = subject
+    msg['From'] = from_addr
+    msg['To'] = to_addr
+    msg.attach(MIMEText(text_msg, 'plain'))
+    return msg
+
 
 @router.get("/{id}", response_model=list[Order])
 async def get_order(id: int, session: AsyncSession = Depends(get_async_session)):
