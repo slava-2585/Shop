@@ -5,13 +5,12 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import TIMESTAMP
 
 
-class Roles(BaseModel):
-    id: int
-    name: str
-
-
 class AddRoles(BaseModel):
     name: str
+
+
+class Roles(AddRoles):
+    id: int
 
 
 class User (BaseModel):
@@ -41,24 +40,21 @@ class measurement(str, Enum):
 
 class ProductCreate(BaseModel):
 
-    name: str
+    name: str = Field(min_length=3)
     price: float = Field(ge=0)
     unit_of_measurement: measurement
 
 
 class ProductUpdate(BaseModel):
 
-    name: str | None = None
-    price: float | None = None
+    name: str | None = Field(min_length=3)
+    price: float | None
     unit_of_measurement: measurement | None = None
 
 
-class Product(BaseModel):
+class Product(ProductCreate):
 
     id: int
-    name: str
-    price: float
-    unit_of_measurement: measurement
 
 
 # order
@@ -71,16 +67,15 @@ class Order(BaseModel):
     dt: datetime
 
 
-class Order(BaseModel):
-
-    id: int
-    id_order: int
-    id_product: int
-    quantity: int
-
-
 class CartCreate(BaseModel):
 
-    #id_order: Order
     id_product: int
     quantity: int
+
+
+class Cart(CartCreate):
+
+    id: int
+    id_order: Order
+    id_product: Product
+

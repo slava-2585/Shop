@@ -1,3 +1,7 @@
+from email.mime.text import MIMEText
+
+from email.mime.multipart import MIMEMultipart
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy import insert, select, update, delete
@@ -26,6 +30,11 @@ def get_msg(from_addr, to_addr, subject, text_msg):
 async def get_order(id: int, session: AsyncSession = Depends(get_async_session)):
     query = select(cart).where(cart.c.id_order == id)
     result = await session.execute(query)
+    # Выборка корзины по номеру заказа
+    query1 = (select([product.c.name,
+                      cart.c.quantity,
+                      (cart.c.quantity * product.price).label("price")]).
+              select_from(cart.join(product))).where(cart.c.id_order == id)
     return result.all()
 
 

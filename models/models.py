@@ -10,12 +10,12 @@ from sqlalchemy import Table, Column, Integer, String, TIMESTAMP, MetaData
 
 metadata = MetaData()
 
-roles = Table(
-    "roles",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("name", String, nullable=False),
-)
+# roles = Table(
+#     "roles",
+#     metadata,
+#     Column("id", Integer, primary_key=True),
+#     Column("name", String, nullable=False),
+# )
 
 
 users = Table(
@@ -26,7 +26,7 @@ users = Table(
     Column("password", String, nullable=False),
     Column("is_active", Boolean, default=True),
     Column("registered_at", DateTime, default=datetime.utcnow),
-    Column("role_id", Integer, ForeignKey("roles.id")),
+    Column("is_admin", Boolean),
 )
 
 
