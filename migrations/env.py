@@ -7,9 +7,10 @@ from alembic import context
 
 from config import settings
 
-from models.models import metadata # noqa
+#from models.models import metadata # noqa
 
 from models.database import Base
+from models.models import User
 
 config = context.config
 
@@ -17,7 +18,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL_psycopg)
-target_metadata = metadata
+target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

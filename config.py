@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     USERNAME: str
     PASSWORD: str
-    HOST: int
+    HOST: str
 
 
     @property
