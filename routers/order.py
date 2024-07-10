@@ -9,8 +9,8 @@ from sqlalchemy.dialects.postgresql import insert as insert_list
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.database import get_async_session
-from models.models import product, order, cart
-from models.schemas import ProductCreate, Product, ProductUpdate, CartCreate, Order
+from models.models import Product, Order, Cart
+from models.schemas import ProductCreate, ProductGet, ProductUpdate, CartCreate, OrderGet
 
 router = APIRouter(
     prefix="/order",
@@ -26,22 +26,22 @@ def get_msg(from_addr, to_addr, subject, text_msg):
     return msg
 
 
-@router.get("/{id}", response_model=list[Order])
+@router.get("/{id}", response_model=list[OrderGet])
 async def get_order(id: int, session: AsyncSession = Depends(get_async_session)):
-    query = select(cart).where(cart.c.id_order == id)
+    query = select(Cart).where(Cart.id_order == id)
     result = await session.execute(query)
     # Выборка корзины по номеру заказа
-    query1 = (select([product.c.name,
-                      cart.c.quantity,
-                      (cart.c.quantity * product.price).label("price")]).
-              select_from(cart.join(product))).where(cart.c.id_order == id)
+    query1 = (select([Product.name,
+                      Cart.quantity,
+                      (Cart.quantity * Product.price).label("price")]).
+              select_from(Cart.join(Product))).where(Cart.id_order == id)
     return result.all()
 
 
 @router.post("/")
 async def create_order(new_order: list[CartCreate], session: AsyncSession = Depends(get_async_session)):
 
-    stmt = insert(order).values({"user_id": 1}).returning(order.c.id)
+    stmt = insert(OrderGet).values({"user_id": 1}).returning(OrderGet.id)
     rezult = await session.execute(stmt)
     id_order = rezult.first()[0]
     await session.commit()
@@ -49,7 +49,7 @@ async def create_order(new_order: list[CartCreate], session: AsyncSession = Depe
         item = item.dict()
         print(item)
         print(id_order)
-        stmt = insert(cart).values({"id_order": id_order, "id_product": item["id_product"],
+        stmt = insert(Cart).values({"id_order": id_order, "id_product": item["id_product"],
                                     "quantity": item["quantity"]})
         rezult = await session.execute(stmt)
         await session.commit()

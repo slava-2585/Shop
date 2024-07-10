@@ -52,7 +52,7 @@ class ProductUpdate(BaseModel):
     unit_of_measurement: measurement | None = None
 
 
-class Product(ProductCreate):
+class ProductGet(ProductCreate):
 
     id: int
 
@@ -60,7 +60,7 @@ class Product(ProductCreate):
 # order
 
 
-class Order(BaseModel):
+class OrderGet(BaseModel):
 
     id: int
     user_id: User
@@ -73,9 +73,9 @@ class CartCreate(BaseModel):
     quantity: int
 
 
-class Cart(CartCreate):
+class CartGet(CartCreate):
 
     id: int
-    id_order: Order
-    id_product: Product
+    id_order: OrderGet
+    id_product: ProductGet
 

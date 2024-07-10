@@ -4,8 +4,8 @@ from sqlalchemy import insert, select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.database import get_async_session
-from models.models import product
-from models.schemas import ProductCreate, Product, ProductUpdate
+from models.models import Product
+from models.schemas import ProductCreate, ProductGet, ProductUpdate
 
 router = APIRouter(
     prefix="/product",
@@ -13,16 +13,16 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[Product])
+@router.get("/", response_model=list[ProductGet])
 async def get_product(session: AsyncSession = Depends(get_async_session)):
-    query = select(product)
-    result = await session.execute(query)
+    query = select(Product)
+    result = await session.scalars(query)
     return result.all()
 
 
 @router.post("/")
 async def create_product(new_product: ProductCreate, session: AsyncSession = Depends(get_async_session)):
-    stmt = insert(product).values(**new_product.dict())
+    stmt = insert(Product).values(**new_product.dict())
     await session.execute(stmt)
     await session.commit()
     return {"status": "success"}
@@ -30,7 +30,7 @@ async def create_product(new_product: ProductCreate, session: AsyncSession = Dep
 
 @router.put("/{id}")
 async def edit_product(id: int, new_product: ProductUpdate, session: AsyncSession = Depends(get_async_session)):
-    stmt = update(product).where(product.c.id == id).values(**new_product.dict(exclude_unset=True)).returning(product.c.id)
+    stmt = update(Product).where(Product.id == id).values(**new_product.dict(exclude_unset=True)).returning(Product.id)
     rezult = await session.execute(stmt)
     if rezult.rowcount == 1:
         await session.commit()
@@ -40,7 +40,7 @@ async def edit_product(id: int, new_product: ProductUpdate, session: AsyncSessio
 
 @router.delete("/{id}")
 async def delete_product(id: int, session: AsyncSession = Depends(get_async_session)):
-    stmt = delete(product).where(product.c.id == id).returning(product.c.id)
+    stmt = delete(Product).where(Product.id == id).returning(Product.id)
     rezult = await session.execute(stmt)
     if rezult.rowcount == 1:
         await session.commit()
