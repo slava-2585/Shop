@@ -16,7 +16,7 @@ class User(Base):
     password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     registered_at = Column(DateTime, default=datetime.utcnow)
-    is_admin = Column(Boolean)
+    is_admin = Column(Boolean, default=False)
 
 
 class Product(Base):

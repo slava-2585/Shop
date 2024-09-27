@@ -1,19 +1,33 @@
-from typing import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException
+
+from typing import Annotated
 
 from sqlalchemy import insert, select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from hashing import Hasher
 from models.database import get_async_session
-from models.schemas import AddRoles, Roles
-
-
+from models.models import User
+from models.schemas import ShowUser, UserCreate
 
 router = APIRouter(
     prefix="/user",
     tags=["Пользователи"],
 )
+
+@router.post("/")
+async def create_user(body: UserCreate, session: AsyncSession = Depends(get_async_session)):
+    async with session.begin():
+        #user_dal = UserDAL(session)
+        new_user = User(
+            email=body.email,
+            password=Hasher.get_password_hash(body.password),
+            is_admin=False,
+
+        )
+        session.add(new_user)
+        await session.flush()
+        return {"status": "success"}
 
 
 # @router.get("/roles/", response_model=list[Roles])

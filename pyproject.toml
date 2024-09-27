@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "myshop"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["all"], version = "^0.115.0"}
+alembic = "^1.13.3"
+asyncpg = "^0.29.0"
+psycopg2 = "^2.9.9"
+sqlalchemy = "^2.0.35"
+passlib = "^1.7.4"
+psycopg = "^3.2.2"
+psycopg-binary = "^3.2.2"
+bcrypt = "^4.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,21 +1,19 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from sqlalchemy import TIMESTAMP
 
 
-class AddRoles(BaseModel):
-    name: str
+#---------------User
+class Roles(str, Enum):
+    admin = "is_admin"
+    user = "is_user"
 
 
-class Roles(AddRoles):
+class ShowUser (BaseModel):
     id: int
-
-
-class User (BaseModel):
-    id: int
-    email: str
+    email: EmailStr
     password: str
     is_active: bool
     registered_at: datetime
@@ -25,9 +23,9 @@ class User (BaseModel):
 class UserCreate (BaseModel):
     email: str
     password: str
-    is_active: bool
-    registered_at: datetime
-    role_id: Roles
+    #is_active: bool
+    #registered_at: datetime
+    #is_admin: bool
 
 # -------------Product
 
@@ -63,7 +61,7 @@ class ProductGet(ProductCreate):
 class OrderGet(BaseModel):
 
     id: int
-    user_id: User
+    user_id: ShowUser
     dt: datetime
 
 
