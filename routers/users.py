@@ -1,15 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException
+from datetime import timedelta
+
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from typing import Annotated
 
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import insert, select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from controllers.user import UserCRUD
+from config import settings
+from controllers.user import UserCRUD, authenticate_user, create_access_token
 from hashing import Hasher, Hash
 from models.database import get_async_session
 from models.models import User
-from models.schemas import ShowUser, UserCreate
+from models.schemas import ShowUser, UserCreate, Token
 
 router = APIRouter(
     prefix="/user",
@@ -39,7 +43,22 @@ async def create_user(user_email: str, session: AsyncSession = Depends(get_async
         return user
 
 
-# @router.delete("/admin_privilege", response_model=ShowUser)
+@router.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
+                                 session: AsyncSession = Depends(get_async_session)
+):
+    user = await authenticate_user(form_data.username, form_data.password, session)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+        )
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email, "other_custom_data": [1, 2, 3, 4]},
+        expires_delta=access_token_expires,
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 # @router.get("/roles/", response_model=list[Roles])

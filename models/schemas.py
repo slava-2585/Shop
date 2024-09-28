@@ -26,6 +26,11 @@ class UserCreate (BaseModel):
     #registered_at: datetime
     #is_admin: bool
 
+
+class Token (BaseModel):
+    access_token: str
+    token_type: str
+
 # -------------Product
 
 

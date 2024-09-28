@@ -12,6 +12,11 @@ class Settings(BaseSettings):
     PASSWORD: str
     HOST: str
 
+    SECRET_KEY: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    ALGORITHM: str
+
+
 
     @property
     def DATABASE_URL_asyncpg(self):

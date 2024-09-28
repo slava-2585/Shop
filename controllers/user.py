@@ -1,12 +1,20 @@
-from typing import Union
+from datetime import datetime, timedelta
+from typing import Union, Optional
 from uuid import UUID
 
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import and_
 from sqlalchemy import select
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
+from jose import jwt
 
+from config import settings
+from hashing import Hash
 from models.models import User
+
+
 
 
 class UserCRUD:
@@ -27,9 +35,9 @@ class UserCRUD:
     async def delete_user(self, user_id: UUID) -> Union[UUID, None]:
         query = (
             update(User)
-            .where(and_(User.user_id == user_id, User.is_active == True))
+            .where(and_(User.id == user_id, User.is_active == True))
             .values(is_active=False)
-            .returning(User.user_id)
+            .returning(User.id)
         )
         res = await self.db_session.execute(query)
         deleted_user_id_row = res.fetchone()
@@ -37,7 +45,7 @@ class UserCRUD:
             return deleted_user_id_row[0]
 
     async def get_user_by_id(self, user_id: int) -> Union[User, None]:
-        query = select(User).where(User.user_id == user_id)
+        query = select(User).where(User.id == user_id)
         res = await self.db_session.execute(query)
         user_row = res.fetchone()
         if user_row is not None:
@@ -61,3 +69,66 @@ class UserCRUD:
         update_user_id_row = res.fetchone()
         if update_user_id_row is not None:
             return update_user_id_row[0]
+
+
+# Login Token--------------------------------------------------------------
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/token")
+
+
+# async def _get_user_by_email_for_auth(email: str, session: AsyncSession):
+#     async with session.begin():
+#         user_crud = UserCRUD(session)
+#         return await user_crud.get_user_by_email(
+#             email=email,
+#         )
+
+
+async def authenticate_user(email: str, password: str, session: AsyncSession) -> Union[User, None]:
+
+    #user = await _get_user_by_email_for_auth(email=email, session=db)
+    user_crud = UserCRUD(session)
+    user = await user_crud.get_user_by_email(email=email)
+
+    if user is None:
+        return None
+    if Hash.verify_password(user.password, password):
+        return user
+    else:
+        return None
+
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
+    return encoded_jwt
+
+
+# async def get_current_user_from_token(
+#     token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
+# ):
+#     credentials_exception = HTTPException(
+#         status_code=status.HTTP_401_UNAUTHORIZED,
+#         detail="Could not validate credentials",
+#     )
+#     try:
+#         payload = jwt.decode(
+#             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+#         )
+#         email: str = payload.get("sub")
+#         if email is None:
+#             raise credentials_exception
+#     except JWTError:
+#         raise credentials_exception
+#     user = await _get_user_by_email_for_auth(email=email, session=db)
+#     if user is None:
+#         raise credentials_exception
+#     return user
