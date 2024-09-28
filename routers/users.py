@@ -5,7 +5,7 @@ from typing import Annotated
 from sqlalchemy import insert, select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from hashing import Hasher
+from hashing import Hasher, Hash
 from models.database import get_async_session
 from models.models import User
 from models.schemas import ShowUser, UserCreate
@@ -21,9 +21,8 @@ async def create_user(body: UserCreate, session: AsyncSession = Depends(get_asyn
         #user_dal = UserDAL(session)
         new_user = User(
             email=body.email,
-            password=Hasher.get_password_hash(body.password),
+            password=Hash.get_password_hash(body.password),
             is_admin=False,
-
         )
         session.add(new_user)
         await session.flush()
@@ -66,3 +65,5 @@ async def create_user(body: UserCreate, session: AsyncSession = Depends(get_asyn
 #         await session.commit()
 #         return {"status": "success"}
 #     raise HTTPException(status_code=404, detail="Product not found")
+
+

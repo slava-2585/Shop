@@ -21,7 +21,7 @@ class ShowUser (BaseModel):
 
 
 class UserCreate (BaseModel):
-    email: str
+    email: EmailStr
     password: str
     #is_active: bool
     #registered_at: datetime
