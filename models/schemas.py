@@ -14,10 +14,9 @@ class Roles(str, Enum):
 class ShowUser (BaseModel):
     id: int
     email: EmailStr
-    password: str
     is_active: bool
     registered_at: datetime
-    role_id: Roles
+    is_admin: bool
 
 
 class UserCreate (BaseModel):

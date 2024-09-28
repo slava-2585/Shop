@@ -5,6 +5,7 @@ from typing import Annotated
 from sqlalchemy import insert, select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from controllers.user import UserCRUD
 from hashing import Hasher, Hash
 from models.database import get_async_session
 from models.models import User
@@ -15,18 +16,30 @@ router = APIRouter(
     tags=["Пользователи"],
 )
 
-@router.post("/")
+@router.post("/", response_model=ShowUser)
 async def create_user(body: UserCreate, session: AsyncSession = Depends(get_async_session)):
     async with session.begin():
-        #user_dal = UserDAL(session)
-        new_user = User(
+        user_crud = UserCRUD(session)
+        user = await user_crud.create_user(
             email=body.email,
-            password=Hash.get_password_hash(body.password),
-            is_admin=False,
-        )
-        session.add(new_user)
-        await session.flush()
-        return {"status": "success"}
+            hashed_password=Hash.get_password_hash(body.password),
+            )
+        return user
+
+
+@router.get("/", response_model=ShowUser)
+async def create_user(user_email: str, session: AsyncSession = Depends(get_async_session)) -> User:
+    async with session.begin():
+        user_crud = UserCRUD(session)
+        user = await user_crud.get_user_by_email(user_email)
+        if user is None:
+            raise HTTPException(
+                status_code=404, detail=f"User with email: {user_email} not found."
+            )
+        return user
+
+
+# @router.delete("/admin_privilege", response_model=ShowUser)
 
 
 # @router.get("/roles/", response_model=list[Roles])
