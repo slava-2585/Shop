@@ -32,7 +32,7 @@ async def create_user(body: UserCreate, session: AsyncSession = Depends(get_asyn
 
 
 @router.get("/", response_model=ShowUser)
-async def create_user(user_email: str, session: AsyncSession = Depends(get_async_session)) -> User:
+async def get_user(user_email: str, session: AsyncSession = Depends(get_async_session)) -> User:
     async with session.begin():
         user_crud = UserCRUD(session)
         user = await user_crud.get_user_by_email(user_email)
@@ -55,7 +55,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.email, "other_custom_data": [1, 2, 3, 4]},
+        data={"sub": user.email, "is_admin": user.is_admin, "user_id": user.id},
         expires_delta=access_token_expires,
     )
     return {"access_token": access_token, "token_type": "bearer"}

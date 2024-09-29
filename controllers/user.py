@@ -2,19 +2,17 @@ from datetime import datetime, timedelta
 from typing import Union, Optional
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import and_
 from sqlalchemy import select
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
-from jose import jwt
+from jose import jwt, JWTError
 
 from config import settings
 from hashing import Hash
 from models.models import User
-
-
 
 
 class UserCRUD:
@@ -112,23 +110,18 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-# async def get_current_user_from_token(
-#     token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
-# ):
-#     credentials_exception = HTTPException(
-#         status_code=status.HTTP_401_UNAUTHORIZED,
-#         detail="Could not validate credentials",
-#     )
-#     try:
-#         payload = jwt.decode(
-#             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-#         )
-#         email: str = payload.get("sub")
-#         if email is None:
-#             raise credentials_exception
-#     except JWTError:
-#         raise credentials_exception
-#     user = await _get_user_by_email_for_auth(email=email, session=db)
-#     if user is None:
-#         raise credentials_exception
-#     return user
+async def get_payload_from_token(token: str = Depends(oauth2_scheme)) -> dict:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+    )
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+    except JWTError as e:
+        #raise credentials_exception
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"invalid token error: {e}")
+    return payload
