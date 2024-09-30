@@ -21,6 +21,8 @@ class User(Base):
     registered_at: Mapped[created_at]
     is_admin: Mapped[Boolean] = mapped_column(default=False)
 
+    order: Mapped[list["Order"]] = relationship(back_populates="user")
+
 
 class Product(Base):
     __tablename__ = "product"
@@ -37,6 +39,8 @@ class Order(Base):
     id: Mapped[intpk]
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     dt: Mapped[created_at]
+
+    user: Mapped["User"] = relationship(back_populates="order")
 
 
 class Cart(Base):
