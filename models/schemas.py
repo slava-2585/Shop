@@ -68,11 +68,11 @@ class ProductGet(ProductCreate):
 # order
 
 
-class OrderGet(BaseModel):
+class GetOrder(BaseModel):
 
     id: int
-    user_id: ShowUser
     dt: datetime
+    email: EmailStr
 
 
 class CartCreate(BaseModel):
@@ -81,9 +81,8 @@ class CartCreate(BaseModel):
     quantity: int
 
 
-class CartGet(CartCreate):
-
-    id: int
-    id_order: OrderGet
-    id_product: ProductGet
+class GetCart(BaseModel):
+    name: str
+    quantity: float
+    total_price: float
 

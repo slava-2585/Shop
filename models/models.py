@@ -17,9 +17,9 @@ class User(Base):
     id: Mapped[intpk]
     email: Mapped[str] = mapped_column(nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[Boolean] = mapped_column(default=True)
+    is_active: Mapped[bool] = mapped_column(default=True)
     registered_at: Mapped[created_at]
-    is_admin: Mapped[Boolean] = mapped_column(default=False)
+    is_admin: Mapped[bool] = mapped_column(default=False)
 
     order: Mapped[list["Order"]] = relationship(back_populates="user")
 
@@ -29,7 +29,7 @@ class Product(Base):
 
     id: Mapped[intpk]
     name: Mapped[str]
-    price: Mapped[Float]
+    price: Mapped[float]
     unit_of_measurement: Mapped[str]
 
 

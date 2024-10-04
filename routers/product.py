@@ -7,6 +7,7 @@ from controllers.user import get_payload_from_token
 from models.database import get_async_session
 from models.models import Product
 from models.schemas import ProductCreate, ProductGet, ProductUpdate
+from send_email import send_email
 
 router = APIRouter(
     prefix="/product",
@@ -60,9 +61,10 @@ async def delete_product(id: int,
                          session: AsyncSession = Depends(get_async_session)
                          ):
     if payload.get('is_admin'):
+
         stmt = delete(Product).where(Product.id == id).returning(Product.id)
         rezult = await session.execute(stmt)
-        if rezult.rowcount == 1:
+        if rezult.raw.rowcount==1:
             await session.commit()
             return {"status": "success"}
         raise HTTPException(status_code=404, detail="Product not found")

@@ -8,9 +8,10 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
-    USERNAME: str
-    PASSWORD: str
+    MAIL_USERNAME: str
+    MAIL_PASSWORD: str
     HOST: str
+    FROM_ADR: str
 
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
