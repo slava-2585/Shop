@@ -13,6 +13,7 @@ from jose import jwt, JWTError
 from config import settings
 from hashing import Hash
 from models.models import User
+from models.schemas import ShowUser
 
 
 class UserCRUD:
@@ -30,7 +31,7 @@ class UserCRUD:
         await self.db_session.flush()
         return new_user
 
-    async def delete_user(self, user_id: UUID) -> Union[UUID, None]:
+    async def delete_user(self, user_id: int) -> Union[int, None]:
         query = (
             update(User)
             .where(and_(User.id == user_id, User.is_active == True))
@@ -41,6 +42,9 @@ class UserCRUD:
         deleted_user_id_row = res.fetchone()
         if deleted_user_id_row is not None:
             return deleted_user_id_row[0]
+        else:
+            return None
+
 
     async def get_user_by_id(self, user_id: int) -> Union[User, None]:
         query = select(User).where(User.id == user_id)
@@ -111,16 +115,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 
 async def get_payload_from_token(token: str = Depends(oauth2_scheme)) -> dict:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-    )
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-    except JWTError as e:
-        #raise credentials_exception
+    except JWTError as e: # Удалить перед релизом
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"invalid token error: {e}")

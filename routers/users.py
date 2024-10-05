@@ -9,7 +9,7 @@ from sqlalchemy import insert, select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
-from controllers.user import UserCRUD, authenticate_user, create_access_token
+from controllers.user import UserCRUD, authenticate_user, create_access_token, get_payload_from_token
 from hashing import Hasher, Hash
 from models.database import get_async_session
 from models.models import User
@@ -20,19 +20,23 @@ router = APIRouter(
     tags=["Пользователи"],
 )
 
+
 @router.post("/", response_model=ShowUser)
+# Создание пользователя с правами Пользователя
 async def create_user(body: UserCreate, session: AsyncSession = Depends(get_async_session)):
     async with session.begin():
         user_crud = UserCRUD(session)
         user = await user_crud.create_user(
             email=body.email,
             hashed_password=Hash.get_password_hash(body.password),
-            )
+        )
         return user
 
 
-@router.get("/", response_model=ShowUser)
-async def get_user(user_email: str, session: AsyncSession = Depends(get_async_session)) -> User:
+@router.get("/{user_email}", response_model=ShowUser)
+async def get_user(user_email: str,
+                   payload: dict = Depends(get_payload_from_token),
+                   session: AsyncSession = Depends(get_async_session)) -> User:
     async with session.begin():
         user_crud = UserCRUD(session)
         user = await user_crud.get_user_by_email(user_email)
@@ -46,7 +50,7 @@ async def get_user(user_email: str, session: AsyncSession = Depends(get_async_se
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
                                  session: AsyncSession = Depends(get_async_session)
-):
+                                 ):
     user = await authenticate_user(form_data.username, form_data.password, session)
     if not user:
         raise HTTPException(
@@ -59,6 +63,20 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         expires_delta=access_token_expires,
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.delete("/{id}")
+async def delete_user(user_id: int, session: AsyncSession = Depends(get_async_session)):
+    async with session.begin():
+        user_crud = UserCRUD(session)
+        del_user_is = user_crud.delete_user(user_id)
+        if del_user_is is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+        else:
+            return {"Delete user is id": del_user_is}
 
 
 # @router.get("/roles/", response_model=list[Roles])
@@ -88,14 +106,3 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 #     raise HTTPException(status_code=404, detail="Product not found")
 #
 #
-# @router.delete("/roles/{id}")
-# async def delete_roles(id: int, session: AsyncSession = Depends(get_async_session)):
-#     stmt = delete(roles).where(roles.c.id == id).returning(roles.c.id)
-#     rezult = await session.execute(stmt)
-#     print(rezult.rowcount)
-#     if rezult.rowcount == 1:
-#         await session.commit()
-#         return {"status": "success"}
-#     raise HTTPException(status_code=404, detail="Product not found")
-
-
