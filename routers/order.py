@@ -19,6 +19,7 @@ router = APIRouter(
     tags=["Заказы"],
 )
 
+
 def get_msg(from_addr, to_addr, subject, text_msg):
     msg = MIMEMultipart()
     msg['Subject'] = subject
