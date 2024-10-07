@@ -15,6 +15,8 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[intpk]
+    firstname: Mapped[str] = mapped_column(nullable=True)
+    lastname: Mapped[str] = mapped_column(nullable=True)
     email: Mapped[str] = mapped_column(nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
@@ -31,6 +33,8 @@ class Product(Base):
     name: Mapped[str]
     price: Mapped[float]
     unit_of_measurement: Mapped[str]
+    characteristics: Mapped[str] = mapped_column(nullable=True)
+    description: Mapped[str] = mapped_column(nullable=True)
 
 
 class Order(Base):

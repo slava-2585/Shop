@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     ALGORITHM: str
 
+    ADMINPASS: str
+    ADMINMAIL: str
 
 
     @property

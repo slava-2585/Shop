@@ -16,7 +16,6 @@ from models.models import User
 
 
 class UserCRUD:
-    """Data Access Layer for operating user info"""
 
     def __init__(self, db_session: AsyncSession):
         self.db_session = db_session

@@ -5,39 +5,30 @@ from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from sqlalchemy import TIMESTAMP
 
 
-#---------------User
-# class Roles(str, Enum):
-#     admin = "is_admin"
-#     user = "is_user"
+# ---------User------------
+
+class User (BaseModel):
+    email: EmailStr
+    first_name: str = Field(min_length=3)
+    last_name: str = Field(min_length=3)
 
 
-# class ShowUserToken (BaseModel):
-#     sub: int
-#     email: EmailStr
-#     is_admin: bool
+class UserCreate (User):
+    password: str
 
 
-class ShowUser (BaseModel):
+class ShowUser (User):
+    id: int
     is_active: bool
     registered_at: datetime
-    id: int
-    email: EmailStr
     is_admin: bool
-
-
-class UserCreate (BaseModel):
-    email: EmailStr
-    password: str
-    #is_active: bool
-    #registered_at: datetime
-    #is_admin: bool
 
 
 class Token (BaseModel):
     access_token: str
     token_type: str
 
-# -------------Product
+# -------------Product----------------
 
 
 class Measurement(str, Enum):
@@ -51,6 +42,8 @@ class ProductCreate(BaseModel):
     name: str = Field(min_length=3)
     price: float = Field(ge=0)
     unit_of_measurement: Measurement
+    characteristics: str | None
+    description: str | None
 
 
 class ProductUpdate(BaseModel):

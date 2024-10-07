@@ -1,0 +1,30 @@
+- name: "Мука"
+  price: 100
+  unit_of_measurement: "кг"
+  characteristics: "Пшеничная"
+  description: "Из твердых сортов пшеницы"
+- name: "Сахар"
+  price: 90
+  unit_of_measurement: "кг"
+  characteristics: "Рафинад"
+  description: "Кусковой"
+- name: "Греча"
+  price: 70
+  unit_of_measurement: "кг"
+  characteristics: "Страна: Россия"
+  description: "Отборная"
+- name: "Рис"
+  price: 105
+  unit_of_measurement: "кг"
+  characteristics: "Пропаренный"
+  description: "Рис для приготовления плова"
+- name: "Mars"
+  price: 75
+  unit_of_measurement: "шт"
+  characteristics: "Вес 75гр"
+  description: "Молочный батончик"
+- name: "Апельсин"
+  price: 99
+  unit_of_measurement: "кг"
+  characteristics: "Страна: Марокко"
+  description: "Апельсины оранжевые"

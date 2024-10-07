@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
 from controllers.user import UserCRUD, authenticate_user, create_access_token
-from hashing import Hasher, Hash
+from hashing import Hash
 from models.database import get_async_session
 from models.models import User
 from models.schemas import ShowUser, UserCreate, Token
