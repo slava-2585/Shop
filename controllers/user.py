@@ -13,7 +13,6 @@ from jose import jwt, JWTError
 from config import settings
 from hashing import Hash
 from models.models import User
-from models.schemas import ShowUser
 
 
 class UserCRUD:
@@ -21,10 +20,12 @@ class UserCRUD:
     def __init__(self, db_session: AsyncSession):
         self.db_session = db_session
 
-    async def create_user(self,email: str,hashed_password: str) -> User:
+    async def create_user(self,email: str, hashed_password: str, firstname: str, lastname: str) -> User:
         new_user = User(
             email=email,
             password=hashed_password,
+            firstname=firstname,
+            lastname=lastname,
         )
         self.db_session.add(new_user)
         await self.db_session.flush()
@@ -62,9 +63,9 @@ class UserCRUD:
     async def update_user(self, user_id: UUID, **kwargs) -> Union[UUID, None]:
         query = (
             update(User)
-            .where(and_(User.user_id == user_id, User.is_active == True))
+            .where(and_(User.id == user_id, User.is_active == True))
             .values(kwargs)
-            .returning(User.user_id)
+            .returning(User.id)
         )
         res = await self.db_session.execute(query)
         update_user_id_row = res.fetchone()

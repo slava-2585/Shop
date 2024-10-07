@@ -61,7 +61,6 @@ async def delete_product(id: int,
                          session: AsyncSession = Depends(get_async_session)
                          ):
     if payload.get('is_admin'):
-
         stmt = delete(Product).where(Product.id == id).returning(Product.id)
         rezult = await session.execute(stmt)
         if rezult.raw.rowcount==1:

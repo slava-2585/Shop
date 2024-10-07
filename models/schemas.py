@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from optparse import Option
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from sqlalchemy import TIMESTAMP
@@ -9,8 +10,8 @@ from sqlalchemy import TIMESTAMP
 
 class User (BaseModel):
     email: EmailStr
-    first_name: str = Field(min_length=3)
-    last_name: str = Field(min_length=3)
+    firstname: str = Field(min_length=3)
+    lastname: str = Field(min_length=3)
 
 
 class UserCreate (User):
@@ -22,6 +23,11 @@ class ShowUser (User):
     is_active: bool
     registered_at: datetime
     is_admin: bool
+
+
+class UpdateUser (BaseModel):
+    firstname: str | None = Field(min_length=3)
+    lastname: str | None = Field(min_length=3)
 
 
 class Token (BaseModel):
