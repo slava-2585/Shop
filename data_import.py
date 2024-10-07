@@ -2,7 +2,6 @@ import asyncio
 
 import yaml
 from sqlalchemy import insert, bindparam
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
 from hashing import Hash
