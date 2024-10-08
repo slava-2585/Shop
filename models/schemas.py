@@ -26,8 +26,8 @@ class ShowUser (User):
 
 
 class UpdateUser (BaseModel):
-    firstname: str | None = Field(min_length=3)
-    lastname: str | None = Field(min_length=3)
+    firstname: str | None = None
+    lastname: str | None = None
 
 
 class Token (BaseModel):
@@ -57,6 +57,8 @@ class ProductUpdate(BaseModel):
     name: str | None = Field(min_length=3)
     price: float | None
     unit_of_measurement: Measurement | None = None
+    characteristics: str | None = None
+    description: str | None = None
 
 
 class ProductGet(ProductCreate):

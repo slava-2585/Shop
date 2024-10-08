@@ -39,15 +39,15 @@ async def create_product(
         )
 
 
-@router.put("/{id}")
+@router.patch("/{id}")
 async def edit_product(id: int, new_product: ProductUpdate,
                        payload: dict = Depends(get_payload_from_token),
                        session: AsyncSession = Depends(get_async_session)
                        ):
     if payload.get('is_admin'):
-        stmt = update(Product).where(Product.id == id).values(**new_product.dict(exclude_unset=True)).returning(Product.id)
+        stmt = update(Product).where(Product.id == id).values(**new_product.model_dump(exclude_unset=True)).returning(Product.id)
         rezult = await session.execute(stmt)
-        if rezult.rowcount == 1:
+        if rezult.raw.rowcount == 1:
             await session.commit()
             return {"status": "success"}
         raise HTTPException(status_code=404, detail="Product not found")

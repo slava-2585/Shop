@@ -12,7 +12,7 @@ from controllers.user import get_payload_from_token
 from models.database import get_async_session
 from models.models import Product, Order, Cart, User
 from models.schemas import ProductCreate, ProductGet, ProductUpdate, CartCreate, GetOrder, GetCart
-from send_email import send_email
+from send_email import send_email, convert_tuple
 
 router = APIRouter(
     prefix="/order",
@@ -58,7 +58,6 @@ async def create_order(new_order: list[CartCreate],
                        payload: dict = Depends(get_payload_from_token),
                        session: AsyncSession = Depends(get_async_session)
                        ):
-
     stmt = insert(Order).values({"user_id": payload.get('user_id')}).returning(Order.id)
     rezult = await session.execute(stmt)
     id_order = rezult.first()[0]
@@ -70,18 +69,20 @@ async def create_order(new_order: list[CartCreate],
         rezult = await session.execute(stmt)
         await session.commit()
 
-        #Запрос деталей заказа для отправки на почту
-        query = (select(Product.name, Cart.quantity, (Cart.quantity * Product.price).label("total_price")).
-                 select_from(Cart).
-                 join(Product).
-                 filter(Cart.id_order == id_order)
-                 )
-        result = await session.execute(query)
-        print(result.all())
-        # try:
-        #     send_email("slava-2585@yandex.ru", result.all(), "Order")
-        # except:
-        #     print("Error send mail")
+    #Запрос деталей заказа для отправки на почту
+    query = (select(Product.name, Cart.quantity, (Cart.quantity * Product.price).label("total_price")).
+             select_from(Cart).
+             join(Product).
+             filter(Cart.id_order == id_order)
+             )
+    result = await session.execute(query)
+    result = result.all()
+    #print(result)
+    str_send = convert_tuple(result)
+    try:
+        await send_email("slava-2585@yandex.ru", str_send, "Order")
+    except:
+        print("Error send mail")
     return {"status": "success"}
 
 

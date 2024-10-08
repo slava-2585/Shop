@@ -80,7 +80,7 @@ async def delete_user(user_id: int,
             else:
                 return {"Delete user is id": del_user_is}
     else:
-        raise HTTPException(status_code=403, detail=f"Access denied.")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Access denied.")
 
 
 @router.patch("/", response_model=ShowUser)
@@ -93,10 +93,14 @@ async def update_user(
     query = (
         update(User)
         .where(and_(User.id == user_id, User.is_active == True))
-        .values(firstname=body.firstname, lastname=body.lastname)
+        .values(**body.model_dump(exclude_unset=True))
         .returning(User)
     )
-    res = await session.execute(query)
-    update_user = res.fetchone()
-    if update_user is not None:
+    print(str(query))
+    rezult = await session.execute(query)
+    if rezult.raw.rowcount == 1:
+        await session.commit()
+        update_user = rezult.fetchone()
+        #return {"status": "success"}
         return update_user[0]
+    raise HTTPException(status_code=404, detail="User not found")
