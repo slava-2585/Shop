@@ -1,38 +1,38 @@
 from datetime import datetime
 from enum import Enum
-from optparse import Option
 
-from pydantic import BaseModel, ConfigDict, Field, EmailStr
-from sqlalchemy import TIMESTAMP
+from pydantic import BaseModel, Field, EmailStr
 
 
 # ---------User------------
 
-class User (BaseModel):
+
+class User(BaseModel):
     email: EmailStr
     firstname: str = Field(min_length=3)
     lastname: str = Field(min_length=3)
 
 
-class UserCreate (User):
+class UserCreate(User):
     password: str
 
 
-class ShowUser (User):
+class ShowUser(User):
     id: int
     is_active: bool
     registered_at: datetime
     is_admin: bool
 
 
-class UpdateUser (BaseModel):
+class UpdateUser(BaseModel):
     firstname: str | None = None
     lastname: str | None = None
 
 
-class Token (BaseModel):
+class Token(BaseModel):
     access_token: str
     token_type: str
+
 
 # -------------Product----------------
 
@@ -87,4 +87,3 @@ class GetCart(BaseModel):
     name: str
     quantity: float
     total_price: float
-

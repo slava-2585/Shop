@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Union, Optional
 from uuid import UUID
 
@@ -20,7 +20,9 @@ class UserCRUD:
     def __init__(self, db_session: AsyncSession):
         self.db_session = db_session
 
-    async def create_user(self,email: str, hashed_password: str, firstname: str, lastname: str) -> User:
+    async def create_user(
+        self, email: str, hashed_password: str, firstname: str, lastname: str
+    ) -> User:
         new_user = User(
             email=email,
             password=hashed_password,
@@ -44,7 +46,6 @@ class UserCRUD:
             return deleted_user_id_row[0]
         else:
             return None
-
 
     async def get_user_by_id(self, user_id: int) -> Union[User, None]:
         query = select(User).where(User.id == user_id)
@@ -73,21 +74,15 @@ class UserCRUD:
             return update_user_id_row[0]
 
 
-# Login Token--------------------------------------------------------------
+# Login Token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/token")
 
 
-# async def _get_user_by_email_for_auth(email: str, session: AsyncSession):
-#     async with session.begin():
-#         user_crud = UserCRUD(session)
-#         return await user_crud.get_user_by_email(
-#             email=email,
-#         )
+async def authenticate_user(
+    email: str, password: str, session: AsyncSession
+) -> Union[User, None]:
 
-
-async def authenticate_user(email: str, password: str, session: AsyncSession) -> Union[User, None]:
-
-    #user = await _get_user_by_email_for_auth(email=email, session=db)
+    # user = await _get_user_by_email_for_auth(email=email, session=db)
     user_crud = UserCRUD(session)
     user = await user_crud.get_user_by_email(email=email)
 
@@ -102,9 +97,9 @@ async def authenticate_user(email: str, password: str, session: AsyncSession) ->
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
+        expire = datetime.now(timezone.utc) + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
     to_encode.update({"exp": expire})
@@ -119,8 +114,8 @@ async def get_payload_from_token(token: str = Depends(oauth2_scheme)) -> dict:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-    except JWTError as e: # Удалить перед релизом
+    except JWTError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"invalid token error: {e}")
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=f"invalid token error:"
+        )
     return payload

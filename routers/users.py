@@ -2,15 +2,19 @@ from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from typing import Annotated
 
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import insert, select, delete, update, and_
+from sqlalchemy import update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
-from controllers.user import UserCRUD, authenticate_user, create_access_token, get_payload_from_token
-from hashing import Hasher, Hash
+from controllers.user import (
+    UserCRUD,
+    authenticate_user,
+    create_access_token,
+    get_payload_from_token,
+)
+from hashing import Hash
 from models.database import get_async_session
 from models.models import User
 from models.schemas import ShowUser, UserCreate, Token, UpdateUser
@@ -20,8 +24,11 @@ router = APIRouter(
     tags=["Пользователи"],
 )
 
+
 @router.post("/", response_model=ShowUser)
-async def create_user(body: UserCreate, session: AsyncSession = Depends(get_async_session)):
+async def create_user(
+    body: UserCreate, session: AsyncSession = Depends(get_async_session)
+):
     async with session.begin():
         user_crud = UserCRUD(session)
         user = await user_crud.create_user(
@@ -29,14 +36,16 @@ async def create_user(body: UserCreate, session: AsyncSession = Depends(get_asyn
             hashed_password=Hash.get_password_hash(body.password),
             firstname=body.firstname,
             lastname=body.lastname,
-            )
+        )
         return user
 
 
 @router.get("/", response_model=ShowUser)
-async def get_user(user_email: str,
-                    payload: dict = Depends(get_payload_from_token),
-                   session: AsyncSession = Depends(get_async_session)) -> User:
+async def get_user(
+    user_email: str,
+    payload: dict = Depends(get_payload_from_token),
+    session: AsyncSession = Depends(get_async_session),
+) -> User:
     async with session.begin():
         user_crud = UserCRUD(session)
         user = await user_crud.get_user_by_email(user_email)
@@ -48,8 +57,9 @@ async def get_user(user_email: str,
 
 
 @router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
-                                 session: AsyncSession = Depends(get_async_session)
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: AsyncSession = Depends(get_async_session),
 ):
     user = await authenticate_user(form_data.username, form_data.password, session)
     if not user or not user.is_active:
@@ -64,11 +74,14 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @router.delete("/{id}")
-async def delete_user(user_id: int,
-                    payload: dict = Depends(get_payload_from_token),
-                    session: AsyncSession = Depends(get_async_session)):
-    if payload.get('is_admin'):
+async def delete_user(
+    user_id: int,
+    payload: dict = Depends(get_payload_from_token),
+    session: AsyncSession = Depends(get_async_session),
+):
+    if payload.get("is_admin"):
         async with session.begin():
             user_crud = UserCRUD(session)
             del_user_is = await user_crud.delete_user(user_id)
@@ -80,15 +93,17 @@ async def delete_user(user_id: int,
             else:
                 return {"Delete user is id": del_user_is}
     else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Access denied.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail=f"Access denied."
+        )
 
 
 @router.patch("/", response_model=ShowUser)
 async def update_user(
-                            body: UpdateUser,
-                            session: AsyncSession = Depends(get_async_session),
-                            payload: dict = Depends(get_payload_from_token),
-                            ):
+    body: UpdateUser,
+    session: AsyncSession = Depends(get_async_session),
+    payload: dict = Depends(get_payload_from_token),
+):
     user_id = payload.get("user_id")
     query = (
         update(User)
@@ -101,6 +116,6 @@ async def update_user(
     if rezult.raw.rowcount == 1:
         await session.commit()
         update_user = rezult.fetchone()
-        #return {"status": "success"}
+        # return {"status": "success"}
         return update_user[0]
     raise HTTPException(status_code=404, detail="User not found")
