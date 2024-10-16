@@ -73,7 +73,8 @@ class GetOrder(BaseModel):
 
     id: int
     dt: datetime
-    email: EmailStr
+    Name: str
+    summa: float
 
 
 class CartCreate(BaseModel):

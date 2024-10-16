@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from sqlalchemy import insert, select, update, delete
+from sqlalchemy import insert, select, update, delete, func
 from sqlalchemy.dialects.postgresql import insert as insert_list
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -45,10 +45,19 @@ async def get_detail_order_for_number(id: int, session: AsyncSession = Depends(g
 @router.get("/", response_model=list[GetOrder])
 async def get_all_order(session: AsyncSession = Depends(get_async_session)):
     # Выборка всех заказов
-    query = (
-        select(Order.id, Order.dt, User.email).select_from(Order).join(User)
+    # query = (
+    #     select(Order.id, Order.dt, User.email).select_from(Order).join(User)
+    # )
+
+    query =(
+        select (Order.id, Order.dt, (User.firstname+" "+User.lastname).label("Name"), func.sum(Cart.quantity * Product.price).label("summa")).
+    select_from (User).join(Order).join (Cart).join (Product).
+    group_by(Order.id, Order.dt, User.firstname, User.lastname)
     )
-    #print(str(query))
+    # order
+    # by
+    # "order".id
+    # print(str(query))
     result = await session.execute(query)
     return result.all()
 
