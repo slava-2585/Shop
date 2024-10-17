@@ -1,3 +1,4 @@
+# Отдельные функции и классы для работы с пользователями.
 from datetime import datetime, timedelta, timezone
 from typing import Union, Optional
 from uuid import UUID

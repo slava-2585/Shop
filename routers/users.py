@@ -1,3 +1,4 @@
+# Модуль для работы с пользователями.
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -25,7 +26,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=ShowUser)
+@router.post("/", response_model=ShowUser) # доступно без авторизации
 async def create_user(
     body: UserCreate, session: AsyncSession = Depends(get_async_session)
 ):
@@ -61,6 +62,7 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_async_session),
 ):
+    # Получение токена
     user = await authenticate_user(form_data.username, form_data.password, session)
     if not user or not user.is_active:
         raise HTTPException(
@@ -75,7 +77,7 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.delete("/{id}")
+@router.delete("/{id}") # Доступно с правами админа
 async def delete_user(
     user_id: int,
     payload: dict = Depends(get_payload_from_token),
@@ -98,7 +100,7 @@ async def delete_user(
         )
 
 
-@router.patch("/", response_model=ShowUser)
+@router.patch("/", response_model=ShowUser) # Изменение своих данных
 async def update_user(
     body: UpdateUser,
     session: AsyncSession = Depends(get_async_session),
@@ -115,7 +117,6 @@ async def update_user(
     rezult = await session.execute(query)
     if rezult.raw.rowcount == 1:
         await session.commit()
-        update_user = rezult.fetchone()
-        # return {"status": "success"}
-        return update_user[0]
+        upd_user = rezult.fetchone()
+        return upd_user[0]
     raise HTTPException(status_code=404, detail="User not found")

@@ -61,7 +61,7 @@ class ProductUpdate(BaseModel):
     description: str | None = None
 
 
-class ProductGet(ProductCreate):
+class GetProduct(ProductCreate):
 
     id: int
 
@@ -74,7 +74,7 @@ class GetOrder(BaseModel):
     id: int
     dt: datetime
     Name: str
-    summa: float
+    Summa: float
 
 
 class CartCreate(BaseModel):

@@ -17,6 +17,7 @@ psycopg = "^3.2.2"
 psycopg-binary = "^3.2.2"
 bcrypt = "^4.2.0"
 python-jose = "^3.3.0"
+fastapi-filters = "^0.2.9"
 
 
 [build-system]

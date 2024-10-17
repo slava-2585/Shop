@@ -1,3 +1,4 @@
+# Настройки подключения в базе данных.
 from typing import AsyncGenerator, Annotated
 
 from sqlalchemy import create_engine, String

@@ -1,4 +1,7 @@
+# Модуль содержит API  для работы с заказами.
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_filters import create_filters, FilterValues
+from pygments.filter import apply_filters
 
 from sqlalchemy import insert, select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,7 +33,8 @@ router = APIRouter(
 
 @router.get("/{id}", response_model=list[GetCart])
 async def get_detail_order_for_number(
-    id_order: int, session: AsyncSession = Depends(get_async_session)
+    id_order: int, session: AsyncSession = Depends(get_async_session),
+    payload: dict = Depends(get_payload_from_token)
 ):
     # Выборка корзины по номеру заказа
     query = (
@@ -48,36 +52,42 @@ async def get_detail_order_for_number(
     return result.all()
 
 
-@router.get("/", response_model=list[GetOrder])
-async def get_all_order(session: AsyncSession = Depends(get_async_session)):
+@router.get("/", response_model=list[GetOrder]) # Доступно с обычными правами
+async def get_all_order(
+    session: AsyncSession = Depends(get_async_session),
+    payload: dict = Depends(get_payload_from_token),
+    filters: FilterValues = Depends(create_filters(summa=float)),
+):
     # Выборка всех заказов
     # query = (
     #     select(Order.id, Order.dt, User.email).select_from(Order).join(User)
     # )
     # Выбор всех заказов со стоимостью
-    query = (
+    query = apply_filters(
         select(
             Order.id,
             Order.dt,
             (User.firstname + " " + User.lastname).label("Name"),
-            func.sum(Cart.quantity * Product.price).label("summa"),
+            func.sum(Cart.quantity * Product.price).label("Summa"),
         )
         .select_from(User)
         .join(Order)
         .join(Cart)
         .join(Product)
-        .group_by(Order.id, Order.dt, User.firstname, User.lastname)
+        .group_by(Order.id, Order.dt, User.firstname, User.lastname),
+        filters,
     )
-    result = await session.execute(query)
+    result = await session.scalars(query)
     return result.all()
 
 
-@router.post("/")
+@router.post("/") # Доступно с правами пользователя
 async def create_order(
     new_order: list[CartCreate],
     payload: dict = Depends(get_payload_from_token),
     session: AsyncSession = Depends(get_async_session),
 ):
+    # Создание заказа
     stmt = insert(Order).values({"user_id": payload.get("user_id")}).returning(Order.id)
     rezult = await session.execute(stmt)
     id_order = rezult.first()[0]
@@ -116,12 +126,13 @@ async def create_order(
     return {"status": "success"}
 
 
-@router.delete("/{id}")
+@router.delete("/{id}") # Доступно с правами админа
 async def delete_order(
     id_order: int,
     payload: dict = Depends(get_payload_from_token),
     session: AsyncSession = Depends(get_async_session),
 ):
+    # Удаление заказа по номеру.
     if payload.get("is_admin"):
         stmt = delete(Order).where(Order.id == id_order).returning(Order.id)
         rezult = await session.execute(stmt)
